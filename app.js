@@ -305,7 +305,6 @@ async function saveData(data) {
   const rowEl = document.getElementById('save-row');
   const offEl = document.getElementById('offline-note');
 
-  // Backup ke localStorage selalu
   const local = JSON.parse(localStorage.getItem('pis_local') || '[]');
   local.push(data);
   localStorage.setItem('pis_local', JSON.stringify(local));
@@ -313,57 +312,27 @@ async function saveData(data) {
   const url = localStorage.getItem('pis_sheets_url') || SHEETS_URL;
   if (!url) {
     rowEl.textContent = '💾 Tersimpan di perangkat ini';
-    rowEl.className   = 'save-row';
     offEl.style.display = 'block';
     return;
   }
 
   offEl.style.display = 'none';
-  rowEl.textContent = '🔄 Menyimpan ke Google Sheets...';
-  rowEl.className   = 'save-row saving';
+  rowEl.textContent = '🔄 Menyimpan...';
+  rowEl.className = 'save-row saving';
+
   try {
-    await fetch(url, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+    const params = new URLSearchParams();
+    params.append('data', JSON.stringify(data));
+    
+    await fetch(url, {
+      method: 'POST',
+      body: params,
+      mode: 'no-cors',
+    });
     rowEl.textContent = '✅ Tersimpan di Google Sheets!';
-    rowEl.className   = 'save-row saved';
+    rowEl.className = 'save-row saved';
   } catch (err) {
-    rowEl.textContent = '💾 Disimpan lokal (Sheets tidak terjangkau)';
-    rowEl.className   = 'save-row';
+    rowEl.textContent = '💾 Disimpan lokal';
+    rowEl.className = 'save-row';
   }
-}
-
-// ══════════════════════════════════════════
-// SETUP (Guru)
-// ══════════════════════════════════════════
-function openSetup() {
-  showScreen('screen-setup');
-  document.getElementById('sheets-url').value = localStorage.getItem('pis_sheets_url') || '';
-}
-function saveSetup() {
-  const url = document.getElementById('sheets-url').value.trim();
-  localStorage.setItem('pis_sheets_url', url);
-  SHEETS_URL = url;
-  toast('✅ Konfigurasi disimpan!');
-  showScreen('screen-splash');
-}
-async function testConn() {
-  const url = document.getElementById('sheets-url').value.trim();
-  const res = document.getElementById('test-res');
-  if (!url) { res.innerHTML = '<div class="test-res test-err">Masukkan URL terlebih dahulu.</div>'; return; }
-  res.innerHTML = '<div class="test-res" style="color:var(--blue1)">Menguji...</div>';
-  try {
-    await fetch(url, { method: 'POST', body: JSON.stringify({ test: true }), headers: { 'Content-Type': 'application/json' } });
-    res.innerHTML = '<div class="test-res test-ok">✅ Koneksi berhasil! Siap menerima data siswa.</div>';
-  } catch (err) {
-    res.innerHTML = '<div class="test-res test-err">❌ Gagal. Periksa URL atau deploy ulang Apps Script.</div>';
-  }
-}
-
-// ══════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
 }
