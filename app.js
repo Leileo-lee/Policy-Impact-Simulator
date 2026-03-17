@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════
-let SHEETS_URL = localStorage.getItem('pis_sheets_url') || '';
+let SHEETS_URL = localStorage.getItem('pis_sheets_url') || 'https://script.google.com/macros/s/AKfycbxf1LRNEvfInCHIUkHwAt2bEGdd3Va5W6ZbM-mMvrE_lcG2vQi2N240iN0Dy5sZUQA9RQ/exec';
 
 // ══════════════════════════════════════════
 // STATE
