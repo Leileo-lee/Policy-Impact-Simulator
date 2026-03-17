@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policy Impact Simulator — SMAN 65 Jakarta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════
+       SPLASH
+  ═══════════════════════════ -->
+  <div class="screen active" id="screen-splash">
+    <div class="splash-logo">
+      <img src="65.png" alt="SMAN 65 Jakarta school logo" />
+    </div>
+    <div class="splash-title">Policy Impact<br>Simulator</div>
+    <div class="splash-sub">Pilih Kebijakanmu dan<br>Rasakan Hasilnya!</div>
+    <button class="btn-mulai" onclick="showScreen('screen-login')">MULAI</button>
+  </div>
+
+  <!-- ═══════════════════════════
+       LOGIN
+  ═══════════════════════════ -->
+  <div class="screen" id="screen-login">
+    <div class="app-header">
+      <div class="hdr-logo">
+        <img src="65.png" alt="Logo" />
+      </div>
+      <div class="hdr-title">Policy Impact<br>Simulator</div>
+      <div class="hdr-sub">Pilih Kebijakanmu dan Rasakan Hasilnya!</div>
+    </div>
+    <div class="card-body">
+      <div class="login-form">
+        <div class="inp-grp">
+          <label class="inp-lbl">Nama</label>
+          <input class="inp-f" id="inp-name" type="text" placeholder="Nama lengkap..." autocomplete="off" />
+        </div>
+        <div class="inp-grp">
+          <label class="inp-lbl">Kelas</label>
+          <select class="inp-f" id="inp-class">
+            <option value="">Pilih kelas...</option>
+            <option>X-1</option><option>X-2</option><option>X-3</option>
+            <option>X-4</option><option>X-5</option>
+            <option>XI IPS 1</option><option>XI IPS 2</option><option>XI IPS 3</option>
+            <option>XII IPS 1</option><option>XII IPS 2</option><option>XII IPS 3</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="doLogin()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       MAP (Pilih Skenario)
+  ═══════════════════════════ -->
+  <div class="screen" id="screen-map">
+    <div class="app-header">
+      <div class="hdr-logo">
+        <img src="65.png" alt="Logo" />
+      </div>
+      <div class="hdr-title">Policy Impact<br>Simulator</div>
+      <div class="hdr-sub">Pilih Kebijakanmu dan Rasakan Hasilnya!</div>
+    </div>
+    <div class="card-body">
+      <div class="map-toprow">
+        <div class="greet-txt" id="greet-txt">Halo!</div>
+        <div class="xp-pill">
+          <div class="xp-bar-sm"><div class="xp-fill-sm" id="xp-fill"></div></div>
+          <span id="xp-pts">0 pts</span>
+        </div>
+      </div>
+      <div class="sec-lbl">Pertanyaan TheoTown</div>
+      <div class="sc-list" id="sc-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       GAME (Pilih Kebijakan)
+  ═══════════════════════════ -->
+  <div class="screen" id="screen-game">
+    <div class="app-header">
+      <div class="hdr-logo">
+        <img src="65.png" alt="Logo" />
+      </div>
+      <div class="hdr-title">Policy Impact<br>Simulator</div>
+      <div class="hdr-sub">Pilih Kebijakanmu dan Rasakan Hasilnya!</div>
+    </div>
+    <div class="card-body">
+      <div class="nav-row">
+        <button class="back-btn2" onclick="gotoMap()">← Kembali</button>
+        <div class="pts-badge" id="chip-score">⭐ 0 pts</div>
+      </div>
+      <div class="prog-dots" id="prog-dots"></div>
+      <div id="sit-wrap"></div>
+      <div class="timer-pill">
+        ⏱ Waktu keputusan: <span class="timer-val" id="timer-disp">00:00</span>
+      </div>
+      <div class="pol-heading">Apa kebijakanmu?</div>
+      <div class="pol-hint">Pilih <strong>1 kebijakan</strong> terbaik. Keputusan cepat + tepat = skor lebih tinggi!</div>
+      <div class="pol-list" id="pol-list"></div>
+      <button class="btn-decide" id="btn-decide" onclick="applyDecision()" disabled>
+        Terapkan Kebijakan ✓
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       RESULT (Dampak & Poin)
+  ═══════════════════════════ -->
+  <div class="screen" id="screen-result">
+    <div class="app-header">
+      <div class="hdr-logo">
+        <img src="65.png" alt="Logo" />
+      </div>
+      <div class="hdr-title">Policy Impact<br>Simulator</div>
+      <div class="hdr-sub">Pilih Kebijakanmu dan Rasakan Hasilnya!</div>
+    </div>
+    <div class="card-body">
+      <div class="nav-row">
+        <button class="back-btn2" onclick="gotoMap()">← Peta</button>
+        <div class="pts-badge" id="chip-score2">⭐ 0 pts</div>
+      </div>
+      <div class="result-hero">
+        <span class="result-emoji" id="res-emoji">🏆</span>
+        <div class="result-title" id="res-title">Keputusan Diambil!</div>
+        <div class="result-sub" id="res-sub"></div>
+        <div class="score-card">
+          <div class="score-big" id="score-num">0</div>
+          <div class="score-info">
+            <div class="score-lbl">DAMPAK DARI KEBIJAKAN YANG KAMU PILIH</div>
+            <div class="score-rank" id="score-rank">Rank —</div>
+          </div>
+        </div>
+      </div>
+      <div class="imp-section-hdr">POIN:</div>
+      <div class="imp-grid" id="imp-cards"></div>
+      <div class="cmp-card">
+        <div class="cmp-hdr">Perbandingan Semua Pilihan</div>
+        <div id="cmp-rows"></div>
+      </div>
+      <div class="save-row" id="save-row">💾 Menyimpan data...</div>
+      <div class="offline-note" id="offline-note">
+        ⚠️ Google Sheets belum dikonfigurasi. Data tersimpan di perangkat ini. Klik ⚙️ untuk setup.
+      </div>
+      <div class="btn-row">
+        <button class="btn-next"  onclick="nextScenario()">Skenario Berikutnya →</button>
+        <button class="btn-ghost" onclick="gotoMap()">Kembali</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       SETUP (Guru)
+  ═══════════════════════════ -->
+  <div class="screen" id="screen-setup">
+    <div class="app-header">
+      <div class="hdr-logo">
+        <img src="65.png" alt="Logo" />
+      </div>
+      <div class="hdr-title">Konfigurasi Guru</div>
+      <div class="hdr-sub">Hubungkan ke Google Sheets</div>
+    </div>
+    <div class="card-body">
+      <div class="nav-row">
+        <button class="back-btn2" onclick="showScreen('screen-splash')">← Kembali</button>
+      </div>
+      <div class="setup-box">
+        <div class="setup-num">LANGKAH 1</div>
+        <div class="setup-h">Buat Google Sheet Baru</div>
+        <div class="setup-p">Buka Google Sheets dan buat spreadsheet baru.</div>
+        <a href="https://sheets.new" target="_blank" class="btn-link-green">Buka Google Sheets →</a>
+      </div>
+      <div class="setup-box">
+        <div class="setup-num">LANGKAH 2</div>
+        <div class="setup-h">Pasang Apps Script</div>
+        <div class="setup-p">Di spreadsheet: <strong>Extensions → Apps Script</strong>, paste kode ini, lalu Deploy sebagai Web App (Execute as: Me, Who has access: Anyone).</div>
+        <div class="code-block" id="gs-code"></div>
+        <div class="note">Salin URL Web App setelah deploy.</div>
+      </div>
+      <div class="setup-box">
+        <div class="setup-num">LANGKAH 3</div>
+        <div class="setup-h">Paste URL Web App</div>
+        <input class="setup-inp" id="sheets-url" placeholder="https://script.google.com/macros/s/.../exec" type="url" />
+        <br />
+        <button class="btn-test" onclick="testConn()">🔗 Test Koneksi</button>
+        <div id="test-res"></div>
+        <div class="note">URL ini disimpan di browser. Paste di setiap komputer yang digunakan siswa.</div>
+      </div>
+      <button class="btn-save" onclick="saveSetup()">Simpan &amp; Selesai ✓</button>
+    </div>
+  </div>
+
+  <div class="gear-btn" onclick="openSetup()" title="Konfigurasi Guru">⚙️</div>
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
