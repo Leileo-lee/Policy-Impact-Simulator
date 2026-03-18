@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════
-let SHEETS_URL = localStorage.getItem('pis_sheets_url') || 'https://script.google.com/macros/s/AKfycbxf1LRNEvfInCHIUkHwAt2bEGdd3Va5W6ZbM-mMvrE_lcG2vQi2N240iN0Dy5sZUQA9RQ/exec';
+let SHEETS_URL = localStorage.getItem('pis_sheets_url') || '';
 
 // ══════════════════════════════════════════
 // STATE
@@ -23,9 +23,15 @@ let timerInt    = null;
 // INIT
 // ══════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
-  // Tampilkan kode GAS di halaman Setup
+  // Tampilkan kode GAS di halaman Setup jika elemen ada
   const el = document.getElementById('gs-code');
-  if (el) el.textContent = GAS_CODE;
+  if (el && typeof GAS_CODE !== 'undefined') {
+    el.textContent = GAS_CODE;
+  }
+
+  // Set nilai input URL jika sudah tersimpan sebelumnya
+  const urlInp = document.getElementById('sheets-url');
+  if (urlInp) urlInp.value = SHEETS_URL;
 });
 
 // ══════════════════════════════════════════
@@ -33,8 +39,11 @@ window.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
 }
 
 function gotoMap() {
@@ -43,13 +52,23 @@ function gotoMap() {
   renderMap();
 }
 
+/**
+ * Membuka layar konfigurasi (Fungsi untuk tombol ⚙️)
+ */
+function openSetup() {
+  showScreen('screen-setup');
+}
+
 // ══════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════
 function doLogin() {
   const name  = document.getElementById('inp-name').value.trim();
   const kelas = document.getElementById('inp-class').value;
-  if (!name || !kelas) { toast('⚠️ Isi nama dan kelas dulu!'); return; }
+  if (!name || !kelas) { 
+    toast('⚠️ Isi nama dan kelas dulu!'); 
+    return; 
+  }
 
   user        = { name, kelas };
   completedSc = JSON.parse(localStorage.getItem('pis_done_' + name) || '{}');
@@ -63,49 +82,60 @@ function doLogin() {
 // MAP
 // ══════════════════════════════════════════
 function renderMap() {
+  if (!user) return;
   document.getElementById('greet-txt').textContent = 'Halo, ' + user.name.split(' ')[0] + '!';
   updateXP();
 
   const diffMeta = {
-    easy: { lbl: 'Mudah',    cls: 'diff-easy' },
+    easy: { lbl: 'Mudah',     cls: 'diff-easy' },
     med:  { lbl: 'Menengah', cls: 'diff-med'  },
     hard: { lbl: 'Sulit',    cls: 'diff-hard' },
   };
 
-  document.getElementById('sc-list').innerHTML = SC.map(s => {
-    const done = completedSc[s.id];
-    const maxScore = Math.max(...s.policies.map(p => p.score));
-    const dm = diffMeta[s.diff];
-    return `
-      <div class="sc-card ${s.id}${done ? ' done' : ''}" onclick="startSc('${s.id}')">
-        ${done ? `<div class="sc-done-badge">✓ ${done.score}pts</div>` : ''}
-        <div class="sc-emoji">${s.icon}</div>
-        <div class="sc-info">
-          <div class="sc-name">${s.name}</div>
-          <div class="sc-ddesc">${s.desc.substring(0, 70)}...</div>
-          <div class="sc-meta">
-            <span class="sc-tag ${dm.cls}">${dm.lbl}</span>
-            <span style="font-size:11px;color:var(--text3);font-weight:600">
-              ${done ? '✓ Selesai' : '⭐ maks ' + maxScore + ' poin'}
-            </span>
+  const scList = document.getElementById('sc-list');
+  if (scList) {
+    scList.innerHTML = SC.map(s => {
+      const done = completedSc[s.id];
+      const maxScore = Math.max(...s.policies.map(p => p.score));
+      const dm = diffMeta[s.diff];
+      return `
+        <div class="sc-card ${s.id}${done ? ' done' : ''}" onclick="startSc('${s.id}')">
+          ${done ? `<div class="sc-done-badge">✓ ${done.score}pts</div>` : ''}
+          <div class="sc-emoji">${s.icon}</div>
+          <div class="sc-info">
+            <div class="sc-name">${s.name}</div>
+            <div class="sc-ddesc">${s.desc.substring(0, 70)}...</div>
+            <div class="sc-meta">
+              <span class="sc-tag ${dm.cls}">${dm.lbl}</span>
+              <span style="font-size:11px;color:var(--text3);font-weight:600">
+                ${done ? '✓ Selesai' : '⭐ maks ' + maxScore + ' poin'}
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="sc-arr">›</div>
-      </div>`;
-  }).join('');
+          <div class="sc-arr">›</div>
+        </div>`;
+    }).join('');
+  }
 }
 
 function updateXP() {
   const maxP = SC.reduce((a, s) => a + Math.max(...s.policies.map(p => p.score)), 0);
   const pct  = Math.min(100, Math.round((totalScore / maxP) * 100));
-  document.getElementById('xp-fill').style.width     = pct + '%';
-  document.getElementById('xp-pts').textContent      = totalScore + ' pts';
-  document.getElementById('chip-score').textContent  = '⭐ ' + totalScore + ' pts';
-  document.getElementById('chip-score2').textContent = '⭐ ' + totalScore + ' pts';
+  
+  const xpFill = document.getElementById('xp-fill');
+  const xpPts = document.getElementById('xp-pts');
+  
+  if (xpFill) xpFill.style.width = pct + '%';
+  if (xpPts) xpPts.textContent = totalScore + ' pts';
+  
+  const cs1 = document.getElementById('chip-score');
+  const cs2 = document.getElementById('chip-score2');
+  if (cs1) cs1.textContent = '⭐ ' + totalScore + ' pts';
+  if (cs2) cs2.textContent = '⭐ ' + totalScore + ' pts';
 }
 
 // ══════════════════════════════════════════
-// GAME
+// GAME ENGINE
 // ══════════════════════════════════════════
 function startSc(id) {
   curSc  = SC.find(s => s.id === id);
@@ -116,13 +146,11 @@ function startSc(id) {
 }
 
 function renderGame() {
-  // Progress dots
   document.getElementById('prog-dots').innerHTML = SC.map(s => {
     const cls = completedSc[s.id] ? 'done' : s.id === curSc.id ? 'active' : '';
     return `<div class="prog-dot ${cls}"></div>`;
   }).join('');
 
-  // Situation card
   document.getElementById('sit-wrap').innerHTML = `
     <div class="sit-card ${curSc.theme}">
       <div class="sit-bg-ico">${curSc.icon}</div>
@@ -134,7 +162,6 @@ function renderGame() {
       </div>
     </div>`;
 
-  // Policy list
   document.getElementById('pol-list').innerHTML = curSc.policies.map(p => `
     <div class="p-card" id="pc-${p.id}" onclick="selPolicy('${p.id}')">
       <div class="p-ico">${p.ico}</div>
@@ -169,29 +196,24 @@ function startTimer() {
     timerSecs++;
     const m = String(Math.floor(timerSecs / 60)).padStart(2, '0');
     const s = String(timerSecs % 60).padStart(2, '0');
-    document.getElementById('timer-disp').textContent = `${m}:${s}`;
+    const disp = document.getElementById('timer-disp');
+    if (disp) disp.textContent = `${m}:${s}`;
   }, 1000);
 }
 function stopTimer() { clearInterval(timerInt); }
 
 // ══════════════════════════════════════════
-// DECISION → RESULT
+// RESULTS
 // ══════════════════════════════════════════
 function applyDecision() {
   if (!selPol) return;
   stopTimer();
 
   const pol = curSc.policies.find(p => p.id === selPol);
-
-  // Skor akhir = skor dasar + time bonus (cepat = bonus, maks +15)
   const timeBonus  = Math.max(0, 15 - Math.floor(timerSecs / 10));
   const finalScore = Math.min(100, pol.score + timeBonus);
-  const rank       = finalScore >= 90 ? 'S'
-                   : finalScore >= 80 ? 'A'
-                   : finalScore >= 70 ? 'B'
-                   : finalScore >= 60 ? 'C' : 'D';
+  const rank       = finalScore >= 90 ? 'S' : finalScore >= 80 ? 'A' : finalScore >= 70 ? 'B' : finalScore >= 60 ? 'C' : 'D';
 
-  // Simpan progres
   completedSc[curSc.id] = { policy: pol.id, score: finalScore };
   localStorage.setItem('pis_done_' + user.name, JSON.stringify(completedSc));
   totalScore += finalScore;
@@ -201,7 +223,7 @@ function applyDecision() {
   showScreen('screen-result');
   buildResult(pol, finalScore, rank);
   saveData({
-    timestamp:   new Date().toISOString(),
+    timestamp:   new Date().toLocaleString(),
     nama:        user.name,
     kelas:       user.kelas,
     skenario:    curSc.name,
@@ -214,23 +236,20 @@ function applyDecision() {
 
 function buildResult(pol, score, rank) {
   const emojiMap = { S: '🏆', A: '⭐', B: '✅', C: '💡', D: '📚' };
-  const titleMap = {
-    S: 'Kebijakan Sempurna!',
-    A: 'Keputusan Sangat Baik!',
-    B: 'Kebijakan Solid!',
-    C: 'Bisa Lebih Baik',
-    D: 'Perlu Evaluasi',
-  };
+  const titleMap = { S: 'Kebijakan Sempurna!', A: 'Keputusan Sangat Baik!', B: 'Kebijakan Solid!', C: 'Bisa Lebih Baik', D: 'Perlu Evaluasi' };
 
   document.getElementById('res-emoji').textContent = emojiMap[rank];
   document.getElementById('res-title').textContent = titleMap[rank];
   document.getElementById('res-sub').textContent   = '📌 ' + pol.name;
 
-  // Animasi angka
   const numEl = document.getElementById('score-num');
   numEl.className = 'score-big rank-' + rank.toLowerCase();
   let n = 0;
-  const ti = setInterval(() => { n = Math.min(n + 3, score); numEl.textContent = n; if (n >= score) clearInterval(ti); }, 20);
+  const ti = setInterval(() => { 
+    n = Math.min(n + 3, score); 
+    numEl.textContent = n; 
+    if (n >= score) clearInterval(ti); 
+  }, 20);
 
   const rankEl = document.getElementById('score-rank');
   rankEl.textContent = 'Rank ' + rank;
@@ -247,12 +266,11 @@ function buildImpactCards(pol) {
   document.getElementById('imp-cards').innerHTML = dims.map(([dim, data], i) => {
     const col   = data.d === 1 ? palette[i % palette.length] : '#e74c3c';
     const arrow = data.d === 1 ? '↑' : '↓';
-    const desc  = data.d === 1 ? 'Dampak positif' : 'Dampak negatif';
     return `
       <div class="imp-card" style="--d:${i * 0.08}s">
         <div class="imp-dim">${dim}</div>
         <div class="imp-val" style="color:${col}">${arrow}${data.v}%</div>
-        <div class="imp-lbl">${desc} pada ${dim.toLowerCase()}</div>
+        <div class="imp-lbl">${data.d === 1 ? 'Dampak positif' : 'Dampak negatif'} pada ${dim.toLowerCase()}</div>
         <div class="imp-bar-wrap">
           <div class="imp-bar-fill" id="ib${i}" style="width:0%; background:${col}"></div>
         </div>
@@ -289,50 +307,81 @@ function buildComparison(myScore) {
   }, 300);
 }
 
-// ══════════════════════════════════════════
-// NEXT SCENARIO
-// ══════════════════════════════════════════
 function nextScenario() {
   const rem = SC.filter(s => !completedSc[s.id]);
-  if (!rem.length) { toast('🎉 Semua skenario selesai!'); gotoMap(); return; }
+  if (!rem.length) { 
+    toast('🎉 Semua skenario selesai!'); 
+    gotoMap(); 
+    return; 
+  }
   startSc(rem[0].id);
 }
 
 // ══════════════════════════════════════════
-// SAVE TO GOOGLE SHEETS
+// SETUP & DATA SAVING
 // ══════════════════════════════════════════
+function saveSetup() {
+  const url = document.getElementById('sheets-url').value.trim();
+  if (url && !url.startsWith('https://script.google.com')) {
+    toast('⚠️ URL tidak valid!');
+    return;
+  }
+  SHEETS_URL = url;
+  localStorage.setItem('pis_sheets_url', url);
+  toast('✅ Konfigurasi disimpan!');
+  showScreen('screen-splash');
+}
+
+async function testConn() {
+  const url = document.getElementById('sheets-url').value.trim();
+  const resEl = document.getElementById('test-res');
+  if (!url) { toast('⚠️ Isi URL dulu!'); return; }
+  
+  resEl.textContent = '⏳ Mengetes koneksi...';
+  try {
+    const params = new URLSearchParams();
+    params.append('data', JSON.stringify({ test: true, nama: 'System Test' }));
+    
+    await fetch(url, { method: 'POST', body: params, mode: 'no-cors' });
+    resEl.innerHTML = '<span style="color:#2ecc71">✅ Terhubung ke Apps Script!</span>';
+  } catch (e) {
+    resEl.innerHTML = '<span style="color:#e74c3c">❌ Gagal terhubung. Periksa URL.</span>';
+  }
+}
+
 async function saveData(data) {
   const rowEl = document.getElementById('save-row');
   const offEl = document.getElementById('offline-note');
-
-  const local = JSON.parse(localStorage.getItem('pis_local') || '[]');
-  local.push(data);
-  localStorage.setItem('pis_local', JSON.stringify(local));
+  if (!rowEl) return;
 
   const url = localStorage.getItem('pis_sheets_url') || SHEETS_URL;
   if (!url) {
-    rowEl.textContent = '💾 Tersimpan di perangkat ini';
-    offEl.style.display = 'block';
+    rowEl.textContent = '💾 Tersimpan secara lokal';
+    if (offEl) offEl.style.display = 'block';
     return;
   }
 
-  offEl.style.display = 'none';
-  rowEl.textContent = '🔄 Menyimpan...';
+  if (offEl) offEl.style.display = 'none';
+  rowEl.textContent = '🔄 Menyimpan ke Google Sheets...';
   rowEl.className = 'save-row saving';
 
   try {
     const params = new URLSearchParams();
     params.append('data', JSON.stringify(data));
     
-    await fetch(url, {
-      method: 'POST',
-      body: params,
-      mode: 'no-cors',
-    });
+    await fetch(url, { method: 'POST', body: params, mode: 'no-cors' });
     rowEl.textContent = '✅ Tersimpan di Google Sheets!';
     rowEl.className = 'save-row saved';
   } catch (err) {
-    rowEl.textContent = '💾 Disimpan lokal';
+    rowEl.textContent = '💾 Gagal kirim, tersimpan lokal';
     rowEl.className = 'save-row';
   }
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
 }
