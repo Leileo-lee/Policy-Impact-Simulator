@@ -7,7 +7,7 @@
 // CONFIG — Supabase
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://ztpimaswwatutduzovng.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0cGltYXN3d2F0dXRkdXpvdm5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTI3ODAsImV4cCI6MjA4OTM2ODc4MH0.ocFUq5ObkkXrCN6RWOtYUeTQ22VV';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0cGltYXN3d2F0dXRkdXpvdm5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTI3ODAsImV4cCI6MjA4OTM2ODc4MH0.ocFUq5ObkkXrCN6RWOtYUeTQ22VVO2TF7_t6vcVY_TY';
 
 // ══════════════════════════════════════════
 // STATE
